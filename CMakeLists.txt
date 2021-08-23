@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 
-project(imgui VERSION 1.84)
+project(imgui VERSION 1.84.2)
 
 if(NOT WIN32)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/../../cmake")
