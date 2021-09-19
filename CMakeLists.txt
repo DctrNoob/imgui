@@ -16,7 +16,7 @@ set(IMGUI_HEADER_FILES
     backends/imgui_impl_opengl3_loader.h
     backends/imgui_impl_opengl3.h
     backends/imgui_impl_sdl.h
-    misc/ab/imgui_ablabel.h
+    misc/ab/imgui_fixedstring.h
     misc/cpp/imgui_stdlib.h
     misc/freetype/imgui_freetype.h
 )
@@ -28,7 +28,6 @@ set(IMGUI_SOURCE_FILES
     imgui.cpp
     backends/imgui_impl_opengl3.cpp
     backends/imgui_impl_sdl.cpp
-    misc/ab/imgui_ablabel.cpp
     misc/cpp/imgui_stdlib.cpp
     misc/freetype/imgui_freetype.cpp
 )
