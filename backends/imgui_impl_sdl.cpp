@@ -61,7 +61,7 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 #if defined(__APPLE__)
-#include "TargetConditionals.h"
+#include <TargetConditionals.h>
 #endif
 
 #if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS)
@@ -320,10 +320,16 @@ bool ImGui_ImplSDL2_InitForMetal(SDL_Window* window)
     return ImGui_ImplSDL2_Init(window, NULL);
 }
 
+bool ImGui_ImplSDL2_InitForSDLRenderer(SDL_Window* window)
+{
+    return ImGui_ImplSDL2_Init(window, NULL);
+}
+
 void ImGui_ImplSDL2_Shutdown()
 {
-    ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplSDL2_Data* bd = ImGui_ImplSDL2_GetBackendData();
+    IM_ASSERT(bd != NULL && "No platform backend to shutdown, or already shutdown?");
+    ImGuiIO& io = ImGui::GetIO();
 
     ImGui_ImplSDL2_ShutdownPlatformInterface();
 
