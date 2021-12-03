@@ -38,28 +38,30 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
 
 if(PLATFORM STREQUAL "OS64") # iOS
-    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../../lib/ios/sdl2/libSDL2-ios.a")
-elseif(PLATFORM STREQUAL "SIMULATOR64") # iOS Simulator
-    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../../lib/ios/sdl2/libSDL2-ios-sim.a")
+    list(APPEND LINK_LIBS
+        "${PROJECT_SOURCE_DIR}/../sdl/lib/ios/libSDL2.a")
 elseif(PLATFORM STREQUAL "MAC") # macOS
-    list(APPEND INCLUDE_DIRS ${SDL2_INCLUDE_DIR} "../gl3w/include")
+    list(APPEND INCLUDE_DIRS
+        ${SDL2_INCLUDE_DIR}
+        "../gl3w/include")
     list(APPEND LINK_LIBS ${SDL2_LIBRARY}
-        "${PROJECT_SOURCE_DIR}/../../lib/macos/sdl2/libSDL2.a"
+        "${PROJECT_SOURCE_DIR}/../sdl/lib/macos/libSDL2.a"
         "gl3w")
 elseif(WIN32) # Windows
-    list(APPEND INCLUDE_DIRS "../gl3w/include")
+    list(APPEND INCLUDE_DIRS
+        "../gl3w/include")
     list(APPEND LINK_LIBS
-        "${PROJECT_SOURCE_DIR}/../../lib/win64/sdl2/SDL2.lib"
+        "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib"
         "gl3w")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIRS}
-    #../angle/include
     ../cereal/include
     ../freetype/include
     ../glm
     ../../inc
     .
 )
+
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBS})
