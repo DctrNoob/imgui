@@ -35,23 +35,32 @@ set(IMGUI_SOURCE_FILES
 add_library(${PROJECT_NAME} STATIC ${IMGUI_SOURCE_FILES} ${IMGUI_HEADER_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
-set(INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
-
 if(PLATFORM STREQUAL "OS64") # iOS
+    list(APPEND INCLUDE_DIRS
+        "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
     list(APPEND LINK_LIBS
         "${PROJECT_SOURCE_DIR}/../sdl/lib/ios/libSDL2.a")
 elseif(PLATFORM STREQUAL "MAC") # macOS
     list(APPEND INCLUDE_DIRS
-        ${SDL2_INCLUDE_DIR}
+        "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2"
         "../gl3w/include")
-    list(APPEND LINK_LIBS ${SDL2_LIBRARY}
+    list(APPEND LINK_LIBS
         "${PROJECT_SOURCE_DIR}/../sdl/lib/macos/libSDL2.a"
         "gl3w")
 elseif(WIN32) # Windows
     list(APPEND INCLUDE_DIRS
+        "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2"
         "../gl3w/include")
     list(APPEND LINK_LIBS
         "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib"
+        "gl3w")
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux") # Linux
+    find_package(SDL2 REQUIRED)
+    list(APPEND INCLUDE_DIRS
+        ${SDL2_INCLUDE_DIRS}
+        "../gl3w/include/")
+    list(APPEND LINK_LIBS
+        ${SDL2_LIBRARIES}
         "gl3w")
 endif()
 
