@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 
 project(imgui VERSION 1.84.2)
 
-if(NOT WIN32)
+if(APPLE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/../../cmake")
 endif()
 
@@ -53,6 +53,15 @@ elseif(WIN32) # Windows
     list(APPEND LINK_LIBS
         "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib"
         "gl3w")
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux") # Linux
+    find_package(SDL2 REQUIRED)
+    list(APPEND INCLUDE_DIRS
+        "../gl3w/include/")
+    list(APPEND LINK_LIBS
+        ${SDL2_LIBRARIES}
+        "gl3w")
+else()
+    message(FATAL_ERROR "Platform ${CMAKE_SYSTEM_NAME} not supported!")
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -64,4 +73,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     .
 )
 
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBS})
+target_link_libraries(${PROJECT_NAME}
+    ${LINK_LIBS}
+    freetype
+)
+
