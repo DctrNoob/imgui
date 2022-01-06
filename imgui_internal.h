@@ -1,4 +1,4 @@
-// dear imgui, v1.86
+// dear imgui, v1.87 WIP
 // (internal structures/api)
 
 // You may use this file to debug, understand or extend ImGui features but we don't provide any guarantee of forward compatibility!
@@ -1890,9 +1890,9 @@ struct ImGuiContext
     ImVector<ImGuiID>       MenusIdSubmittedThisFrame;          // A list of menu IDs that were rendered at least once
 
     // Platform support
-    ImVec2                  PlatformImePos;                     // Cursor position request & last passed to the OS Input Method Editor
-    ImVec2                  PlatformImeLastPos;
-    ImGuiViewportP*         PlatformImePosViewport;
+    ImGuiPlatformImeData    PlatformImeData;                    // Data updated by current frame
+    ImGuiPlatformImeData    PlatformImeDataPrev;                // Previous frame data (when changing we will call io.SetPlatformImeDataFn
+    ImGuiID                 PlatformImeViewport;
     char                    PlatformLocaleDecimalPoint;         // '.' or *localeconv()->decimal_point
 
     // Extensions
@@ -2068,8 +2068,9 @@ struct ImGuiContext
         TooltipOverrideCount = 0;
         TooltipSlowDelay = 0.50f;
 
-        PlatformImePos = PlatformImeLastPos = ImVec2(FLT_MAX, FLT_MAX);
-        PlatformImePosViewport = 0;
+        PlatformImeData.InputPos = ImVec2(0.0f, 0.0f);
+        PlatformImeDataPrev.InputPos = ImVec2(-1.0f, -1.0f); // Different to ensure initial submission
+        PlatformImeViewport = 0;
         PlatformLocaleDecimalPoint = '.';
 
         SettingsLoaded = false;
@@ -2694,7 +2695,8 @@ namespace ImGui
     IMGUI_API void          ScaleWindowsInViewport(ImGuiViewportP* viewport, float scale);
     IMGUI_API void          DestroyPlatformWindow(ImGuiViewportP* viewport);
     IMGUI_API void          SetCurrentViewport(ImGuiWindow* window, ImGuiViewportP* viewport);
-    IMGUI_API const ImGuiPlatformMonitor* GetViewportPlatformMonitor(ImGuiViewport* viewport);
+    IMGUI_API const ImGuiPlatformMonitor*   GetViewportPlatformMonitor(ImGuiViewport* viewport);
+    IMGUI_API ImGuiViewportP*               FindHoveredViewportFromPlatformWindowStack(const ImVec2& mouse_platform_pos);
 
     // Settings
     IMGUI_API void                  MarkIniSettingsDirty();
@@ -3104,7 +3106,9 @@ struct ImFontBuilderIO
 };
 
 // Helper for font builder
+#ifdef IMGUI_ENABLE_STB_TRUETYPE
 IMGUI_API const ImFontBuilderIO* ImFontAtlasGetBuilderForStbTruetype();
+#endif
 IMGUI_API void      ImFontAtlasBuildInit(ImFontAtlas* atlas);
 IMGUI_API void      ImFontAtlasBuildSetupFont(ImFontAtlas* atlas, ImFont* font, ImFontConfig* font_config, float ascent, float descent);
 IMGUI_API void      ImFontAtlasBuildPackCustomRects(ImFontAtlas* atlas, void* stbrp_context_opaque);
