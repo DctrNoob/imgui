@@ -55,12 +55,11 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
         "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib"
         "gl3w")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    find_package(SDL2 REQUIRED)
     list(APPEND INCLUDE_DIRS
-        ${SDL2_INCLUDE_DIRS}
+        "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2"
         "../gl3w/include/")
     list(APPEND LINK_LIBS
-        ${SDL2_LIBRARIES}
+        "${PROJECT_SOURCE_DIR}/../sdl/lib/linux/libSDL2.a"
         "gl3w")
 else()
     message(FATAL_ERROR "Platform ${CMAKE_SYSTEM_NAME} not supported!")
