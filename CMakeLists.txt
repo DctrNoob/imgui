@@ -32,6 +32,11 @@ set(IMGUI_SOURCE_FILES
     misc/freetype/imgui_freetype.cpp
 )
 
+add_subdirectory(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../gl3w
+    ${CMAKE_CURRENT_SOURCE_DIR}/../gl3w/build
+    EXCLUDE_FROM_ALL)
+
 add_library(${PROJECT_NAME} STATIC ${IMGUI_SOURCE_FILES} ${IMGUI_HEADER_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
