@@ -16,7 +16,6 @@ set(IMGUI_HEADER_FILES
     backends/imgui_impl_sdl.h
     misc/ab/imgui_fixedstring.h
     misc/cpp/imgui_stdlib.h
-    misc/freetype/imgui_freetype.h
 )
 
 set(IMGUI_SOURCE_FILES
@@ -26,7 +25,6 @@ set(IMGUI_SOURCE_FILES
     imgui.cpp
     backends/imgui_impl_sdl.cpp
     misc/cpp/imgui_stdlib.cpp
-    misc/freetype/imgui_freetype.cpp
 )
 
 add_library(${PROJECT_NAME} STATIC ${IMGUI_SOURCE_FILES} ${IMGUI_HEADER_FILES})
@@ -59,7 +57,6 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIRS}
     ../cereal/include
-    ../freetype/include
     ../glm
     ../../inc
     .
@@ -67,6 +64,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_link_libraries(${PROJECT_NAME}
     ${LINK_LIBS}
-    freetype
 )
 
