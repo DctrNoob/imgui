@@ -414,8 +414,10 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer, void
     {
 #ifdef _WIN32
         main_viewport->PlatformHandleRaw = (void*)info.info.win.window;
-#elif defined(__APPLE__)
+#elif defined(SDL_VIDEO_DRIVER_COCOA)
         main_viewport->PlatformHandleRaw = (void*)info.info.cocoa.window;
+#elif defined(SDL_VIDEO_DRIVER_UIKIT)
+        main_viewport->PlatformHandleRaw = (void*)info.info.uikit.window;
 #endif
     }
 
@@ -760,8 +762,10 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport* viewport)
     {
 #if defined(_WIN32)
         viewport->PlatformHandleRaw = info.info.win.window;
-#elif defined(__APPLE__)
+#elif defined(SDL_VIDEO_DRIVER_COCOA)
         viewport->PlatformHandleRaw = (void*)info.info.cocoa.window;
+#elif defined(SDL_VIDEO_DRIVER_UIKIT)
+        viewport->PlatformHandleRaw = (void*)info.info.uikit.window;
 #endif
     }
 }
