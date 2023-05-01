@@ -40,7 +40,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
     list(APPEND LINK_LIBS
         "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/linux/libSDL2.a")
+    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/linux64/libSDL2.a")
 else()
     message(FATAL_ERROR "Platform ${CMAKE_SYSTEM_NAME} not supported!")
 endif()
