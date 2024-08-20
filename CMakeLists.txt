@@ -31,16 +31,18 @@ add_library(${PROJECT_NAME} STATIC ${IMGUI_SOURCE_FILES} ${IMGUI_HEADER_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 if(CMAKE_SYSTEM_NAME MATCHES "iOS")
-    list(APPEND LINK_LIBS
-        "${PROJECT_SOURCE_DIR}/../sdl/lib/ios/libSDL2.a")
+    list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
+    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/ios/libSDL2.a")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-    list(APPEND LINK_LIBS
-        "${PROJECT_SOURCE_DIR}/../sdl/lib/macos/libSDL2.a")
+    list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
+    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/macos/libSDL2.a")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
-    list(APPEND LINK_LIBS
-        "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib")
+    list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
+    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib")
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/linux64/libSDL2.a")
+    find_package(SDL2 REQUIRED)
+    list(APPEND INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
+    list(APPEND LINK_LIBS ${SDL2_LIBRARIES})
 else()
     message(FATAL_ERROR "Platform ${CMAKE_SYSTEM_NAME} not supported!")
 endif()
@@ -49,7 +51,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIRS}
     ../cereal/include
     ../glm
-    ../sdl/include/sdl2
     ../../inc
     .
 )
