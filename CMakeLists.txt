@@ -49,6 +49,7 @@ elseif(AB_PLATFORM MATCHES "AB_PLATFORM_STEAMOS")
 else()
     message(FATAL_ERROR "Platform '${AB_PLATFORM}' not supported!")
 endif()
+message("ImGui platform: ${AB_PLATFORM}")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIRS}
