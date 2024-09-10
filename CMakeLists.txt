@@ -30,10 +30,7 @@ set(IMGUI_SOURCE_FILES
 add_library(${PROJECT_NAME} STATIC ${IMGUI_SOURCE_FILES} ${IMGUI_HEADER_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-if(AB_PLATFORM MATCHES "AB_PLATFORM_IOS")
-    list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
-    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/ios/libSDL2.a")
-elseif(AB_PLATFORM MATCHES "AB_PLATFORM_MACOS")
+if(AB_PLATFORM MATCHES "AB_PLATFORM_MACOS")
     list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
     list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/macos/libSDL2.a")
 elseif(AB_PLATFORM MATCHES "AB_PLATFORM_WINDOWS")
@@ -49,7 +46,6 @@ elseif(AB_PLATFORM MATCHES "AB_PLATFORM_STEAMOS")
 else()
     message(FATAL_ERROR "Platform '${AB_PLATFORM}' not supported!")
 endif()
-message("ImGui platform: ${AB_PLATFORM}")
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${INCLUDE_DIRS}
