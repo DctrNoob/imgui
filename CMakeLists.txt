@@ -30,26 +30,21 @@ set(IMGUI_SOURCE_FILES
 add_library(${PROJECT_NAME} STATIC ${IMGUI_SOURCE_FILES} ${IMGUI_HEADER_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-if(AB_PLATFORM MATCHES "AB_PLATFORM_MACOS")
-    list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
-elseif(AB_PLATFORM MATCHES "AB_PLATFORM_WINDOWS")
-    list(APPEND INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../sdl/include/sdl2")
-    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib")
-elseif(AB_PLATFORM MATCHES "AB_PLATFORM_LINUX")
-    find_package(SDL2 REQUIRED)
-    list(APPEND INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
-    list(APPEND LINK_LIBS ${SDL2_LIBRARIES})
-else()
-    message(FATAL_ERROR "Platform '${AB_PLATFORM}' not supported!")
-endif()
-
 target_include_directories(${PROJECT_NAME} PUBLIC
-    ${INCLUDE_DIRS}
     ../cereal/include
     ../glm
+    ../sdl/include/sdl2
     ../../inc
     .
 )
+
+if(AB_PLATFORM MATCHES "AB_PLATFORM_MACOS")
+elseif(AB_PLATFORM MATCHES "AB_PLATFORM_WINDOWS")
+    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib")
+elseif(AB_PLATFORM MATCHES "AB_PLATFORM_LINUX")
+else()
+    message(FATAL_ERROR "Platform '${AB_PLATFORM}' not supported!")
+endif()
 
 target_link_libraries(${PROJECT_NAME}
     ${LINK_LIBS}
