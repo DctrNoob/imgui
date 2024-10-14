@@ -33,18 +33,10 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 target_include_directories(${PROJECT_NAME} PUBLIC
     ../cereal/include
     ../glm
-    ../sdl/include/sdl2
+    ../sdl/include
     ../../inc
     .
 )
-
-if(AB_PLATFORM MATCHES "AB_PLATFORM_MACOS")
-elseif(AB_PLATFORM MATCHES "AB_PLATFORM_WINDOWS")
-    list(APPEND LINK_LIBS "${PROJECT_SOURCE_DIR}/../sdl/lib/win64/SDL2.lib")
-elseif(AB_PLATFORM MATCHES "AB_PLATFORM_LINUX")
-else()
-    message(FATAL_ERROR "Platform '${AB_PLATFORM}' not supported!")
-endif()
 
 target_link_libraries(${PROJECT_NAME}
     ${LINK_LIBS}
