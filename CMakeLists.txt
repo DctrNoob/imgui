@@ -13,7 +13,7 @@ set(IMGUI_HEADER_FILES
     imstb_rectpack.h
     imstb_textedit.h
     imstb_truetype.h
-    backends/imgui_impl_sdl2.h
+    backends/imgui_impl_sdl3.h
     misc/ab/imgui_fixedstring.h
     misc/cpp/imgui_stdlib.h
 )
@@ -23,7 +23,7 @@ set(IMGUI_SOURCE_FILES
     imgui_tables.cpp
     imgui_widgets.cpp
     imgui.cpp
-    backends/imgui_impl_sdl2.cpp
+    backends/imgui_impl_sdl3.cpp
     misc/cpp/imgui_stdlib.cpp
 )
 
