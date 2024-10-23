@@ -14,9 +14,6 @@
 
 #pragma once
 
-#include <glm/ext/vector_float2.hpp>
-#include <glm/ext/vector_float4.hpp>
-
 //---- Define assertion handler. Defaults to calling assert().
 // If your macro uses multiple statements, make sure is enclosed in a 'do { .. } while (0)' block so it can be used as a single statement.
 //#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
@@ -31,14 +28,14 @@
 //#define IMGUI_API __attribute__((visibility("default")))  // GCC/Clang: override visibility when set is hidden
 
 //---- Don't define obsolete functions/enums/behaviors. Consider enabling from time to time after updating to clean your code of obsolete function/names.
-#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-#define IMGUI_DISABLE_OBSOLETE_KEYIO                      // 1.87+ disable legacy io.KeyMap[]+io.KeysDown[] in favor io.AddKeyEvent(). This is automatically done by IMGUI_DISABLE_OBSOLETE_FUNCTIONS.
+//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+//#define IMGUI_DISABLE_OBSOLETE_KEYIO                      // 1.87+ disable legacy io.KeyMap[]+io.KeysDown[] in favor io.AddKeyEvent(). This is automatically done by IMGUI_DISABLE_OBSOLETE_FUNCTIONS.
 
 //---- Disable all of Dear ImGui or don't implement standard windows/tools.
 // It is very strongly recommended to NOT disable the demo windows and debug tool during development. They are extremely useful in day to day work. Please read comments in imgui_demo.cpp.
 //#define IMGUI_DISABLE                                     // Disable everything: all headers and source files will be empty.
-#define IMGUI_DISABLE_DEMO_WINDOWS                        // Disable demo windows: ShowDemoWindow()/ShowStyleEditor() will be empty.
-#define IMGUI_DISABLE_DEBUG_TOOLS                         // Disable metrics/debugger and other debug tools: ShowMetricsWindow(), ShowDebugLogWindow() and ShowIDStackToolWindow() will be empty.
+//#define IMGUI_DISABLE_DEMO_WINDOWS                        // Disable demo windows: ShowDemoWindow()/ShowStyleEditor() will be empty.
+//#define IMGUI_DISABLE_DEBUG_TOOLS                         // Disable metrics/debugger and other debug tools: ShowMetricsWindow(), ShowDebugLogWindow() and ShowIDStackToolWindow() will be empty.
 
 //---- Don't implement some functions to reduce linkage requirements.
 //#define IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS   // [Win32] Don't implement default clipboard handler. Won't use and link with OpenClipboard/GetClipboardData/CloseClipboard etc. (user32.lib/.a, kernel32.lib/.a)
@@ -51,7 +48,7 @@
 //#define IMGUI_DISABLE_DEFAULT_MATH_FUNCTIONS              // Don't implement ImFabs/ImSqrt/ImPow/ImFmod/ImCos/ImSin/ImAcos/ImAtan2 so you can implement them yourself.
 //#define IMGUI_DISABLE_FILE_FUNCTIONS                      // Don't implement ImFileOpen/ImFileClose/ImFileRead/ImFileWrite and ImFileHandle at all (replace them with dummies)
 //#define IMGUI_DISABLE_DEFAULT_FILE_FUNCTIONS              // Don't implement ImFileOpen/ImFileClose/ImFileRead/ImFileWrite and ImFileHandle so you can implement them yourself if you don't want to link with fopen/fclose/fread/fwrite. This will also disable the LogToTTY() function.
-#define IMGUI_DISABLE_DEFAULT_ALLOCATORS                  // Don't implement default allocators calling malloc()/free() to avoid linking with them. You will need to call ImGui::SetAllocatorFunctions().
+//#define IMGUI_DISABLE_DEFAULT_ALLOCATORS                  // Don't implement default allocators calling malloc()/free() to avoid linking with them. You will need to call ImGui::SetAllocatorFunctions().
 //#define IMGUI_DISABLE_SSE                                 // Disable use of SSE intrinsics even if available
 
 //---- Enable Test Engine / Automation features.
@@ -101,16 +98,15 @@
 
 //---- Define constructor and implicit cast operators to convert back<>forth between your math types and ImVec2/ImVec4.
 // This will be inlined as part of ImVec2 and ImVec4 class declarations.
-#define IM_VEC2_CLASS_EXTRA                                                         \
-        constexpr ImVec2(const glm::vec2& f) : x(f.x), y(f.y) {}                    \
-        operator glm::vec2() const { return glm::vec2(x,y); }
-#define IM_VEC4_CLASS_EXTRA                                                         \
-        constexpr ImVec4(const glm::vec4& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}    \
-        operator glm::vec4() const { return glm::vec4(x,y,z,w); }
+/*
+#define IM_VEC2_CLASS_EXTRA                                                     \
+        constexpr ImVec2(const MyVec2& f) : x(f.x), y(f.y) {}                   \
+        operator MyVec2() const { return MyVec2(x,y); }
 
-//---- ...Or use Dear ImGui's own very basic math operators.
-//#define IMGUI_DEFINE_MATH_OPERATORS
-
+#define IM_VEC4_CLASS_EXTRA                                                     \
+        constexpr ImVec4(const MyVec4& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}   \
+        operator MyVec4() const { return MyVec4(x,y,z,w); }
+*/
 //---- ...Or use Dear ImGui's own very basic math operators.
 //#define IMGUI_DEFINE_MATH_OPERATORS
 
