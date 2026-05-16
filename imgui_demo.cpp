@@ -1,4 +1,4 @@
-// dear imgui, v1.92.7 WIP
+// dear imgui, v1.92.9 WIP
 // (demo code)
 
 // Help:
@@ -12,7 +12,7 @@
 
 // How to easily locate code?
 // - Use Tools->Item Picker to debug break in code by clicking any widgets: https://github.com/ocornut/imgui/wiki/Debug-Tools
-// - Browse an online version the demo with code linked to hovered widgets: https://pthom.github.io/imgui_manual_online/manual/imgui_manual.html
+// - Browse pthom's online imgui_explorer: web version the demo w/ source code browser: https://pthom.github.io/imgui_explorer
 // - Find a visible string and search for it in the code!
 
 //---------------------------------------------------
@@ -73,6 +73,7 @@ Index of this file:
 // [SECTION] Demo Window / ShowDemoWindow()
 // [SECTION] DemoWindowMenuBar()
 // [SECTION] Helpers: ExampleTreeNode, ExampleMemberInfo (for use by Property Editor & Multi-Select demos)
+// [SECTION] Helpers: ExampleImageViewer
 // [SECTION] DemoWindowWidgetsBasic()
 // [SECTION] DemoWindowWidgetsBullets()
 // [SECTION] DemoWindowWidgetsCollapsingHeaders()
@@ -108,6 +109,7 @@ Index of this file:
 // [SECTION] User Guide / ShowUserGuide()
 // [SECTION] Example App: Main Menu Bar / ShowExampleAppMainMenuBar()
 // [SECTION] Example App: Debug Console / ShowExampleAppConsole()
+// [SECTION] Example App: Image Viewer / ShowExampleAppImageViewer()
 // [SECTION] Example App: Debug Log / ShowExampleAppLog()
 // [SECTION] Example App: Simple Layout / ShowExampleAppLayout()
 // [SECTION] Example App: Property Editor / ShowExampleAppPropertyEditor()
@@ -240,6 +242,7 @@ static void ShowExampleAppConsole(bool* p_open);
 static void ShowExampleAppCustomRendering(bool* p_open);
 static void ShowExampleAppDockSpace(bool* p_open);
 static void ShowExampleAppDocuments(bool* p_open);
+static void ShowExampleAppImageViewer(bool* p_open);
 static void ShowExampleAppLog(bool* p_open);
 static void ShowExampleAppLayout(bool* p_open);
 static void ShowExampleAppPropertyEditor(bool* p_open, ImGuiDemoWindowData* demo_data);
@@ -294,9 +297,9 @@ static void ShowDockingDisabledMessage()
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 }
 
-// Helper to wire demo markers located in code to an interactive browser (e.g. imgui_manual)
+// Helper to wire demo markers located in code to an interactive browser (e.g. https://pthom.github.io/imgui_explorer)
 #if IMGUI_VERSION_NUM >= 19263
-namespace ImGui { extern IMGUI_API void DemoMarker(const char* file, int line, const char* section); };
+namespace ImGui { extern IMGUI_API void DemoMarker(const char* file, int line, const char* section); }
 #define IMGUI_DEMO_MARKER(section)  do { ImGui::DemoMarker("imgui_demo.cpp", __LINE__, section); } while (0)
 #endif
 
@@ -321,6 +324,7 @@ struct ImGuiDemoWindowData
     bool ShowAppCustomRendering = false;
     bool ShowAppDocuments = false;
     bool ShowAppDockSpace = false;
+    bool ShowAppImageViewer = false;
     bool ShowAppLog = false;
     bool ShowAppLayout = false;
     bool ShowAppPropertyEditor = false;
@@ -367,6 +371,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
     if (demo_data.ShowAppAssetsBrowser)     { ShowExampleAppAssetsBrowser(&demo_data.ShowAppAssetsBrowser); }
     if (demo_data.ShowAppConsole)           { ShowExampleAppConsole(&demo_data.ShowAppConsole); }
     if (demo_data.ShowAppCustomRendering)   { ShowExampleAppCustomRendering(&demo_data.ShowAppCustomRendering); }
+    if (demo_data.ShowAppImageViewer)       { ShowExampleAppImageViewer(&demo_data.ShowAppImageViewer); }
     if (demo_data.ShowAppLog)               { ShowExampleAppLog(&demo_data.ShowAppLog); }
     if (demo_data.ShowAppLayout)            { ShowExampleAppLayout(&demo_data.ShowAppLayout); }
     if (demo_data.ShowAppPropertyEditor)    { ShowExampleAppPropertyEditor(&demo_data.ShowAppPropertyEditor, &demo_data); }
@@ -459,6 +464,9 @@ void ImGui::ShowDemoWindow(bool* p_open)
         ImGui::BulletText("The \"Examples\" menu above leads to more demo contents.");
         ImGui::BulletText("The \"Tools\" menu above gives access to: About Box, Style Editor,\n"
                           "and Metrics/Debugger (general purpose Dear ImGui debugging tool).");
+        ImGui::BulletText("Web demo (w/ source code browser): ");
+        ImGui::SameLine(0, 0);
+        ImGui::TextLinkOpenURL("https://pthom.github.io/imgui_explorer");
 
         ImGui::SeparatorText("PROGRAMMER GUIDE:");
         ImGui::BulletText("See the ShowDemoWindow() code in imgui_demo.cpp. <- you are here!");
@@ -587,7 +595,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::Checkbox("io.ConfigInputTextCursorBlink", &io.ConfigInputTextCursorBlink);
             ImGui::SameLine(); HelpMarker("Enable blinking cursor (optional as some users consider it to be distracting).");
             ImGui::Checkbox("io.ConfigInputTextEnterKeepActive", &io.ConfigInputTextEnterKeepActive);
-            ImGui::SameLine(); HelpMarker("Pressing Enter will keep item active and select contents (single-line only).");
+            ImGui::SameLine(); HelpMarker("Pressing Enter will reactivate item and select all text (single-line only).");
             ImGui::Checkbox("io.ConfigDragClickToInputText", &io.ConfigDragClickToInputText);
             ImGui::SameLine(); HelpMarker("Enable turning DragXXX widgets into text input with a simple mouse click-release (without moving).");
             ImGui::Checkbox("io.ConfigMacOSXBehaviors", &io.ConfigMacOSXBehaviors);
@@ -745,6 +753,7 @@ static void DemoWindowMenuBar(ImGuiDemoWindowData* demo_data)
             ImGui::MenuItem("Custom rendering", NULL, &demo_data->ShowAppCustomRendering);
             ImGui::MenuItem("Documents", NULL, &demo_data->ShowAppDocuments);
             ImGui::MenuItem("Dockspace", NULL, &demo_data->ShowAppDockSpace);
+            ImGui::MenuItem("Image Viewer", NULL, &demo_data->ShowAppImageViewer);
             ImGui::MenuItem("Log", NULL, &demo_data->ShowAppLog);
             ImGui::MenuItem("Property editor", NULL, &demo_data->ShowAppPropertyEditor);
             ImGui::MenuItem("Simple layout", NULL, &demo_data->ShowAppLayout);
@@ -776,7 +785,7 @@ static void DemoWindowMenuBar(ImGuiDemoWindowData* demo_data)
                 ImGui::Checkbox("Highlight ID Conflicts", &io.ConfigDebugHighlightIdConflicts);
                 ImGui::EndDisabled();
                 ImGui::Checkbox("Assert on error recovery", &io.ConfigErrorRecoveryEnableAssert);
-                ImGui::TextDisabled("(see Demo->Configuration for details & more)");
+                ImGui::TextDisabled("(see Demo->Configuration for more)");
                 ImGui::EndMenu();
             }
             ImGui::MenuItem("Debug Log", NULL, &demo_data->ShowDebugLog, has_debug_tools);
@@ -891,6 +900,87 @@ static ExampleTreeNode* ExampleTree_CreateDemoTree()
         }
     }
     return node_L0;
+}
+
+//-----------------------------------------------------------------------------
+// [SECTION] Helpers: ExampleImageViewer
+//-----------------------------------------------------------------------------
+
+struct ExampleImageViewerData
+{
+    ImU32   ImageBgColor = IM_COL32(100, 100, 100, 255);
+    ImU32   GridColor = IM_COL32(255, 255, 255, 100);
+    bool    GridEnabled = true;
+    bool    ViewReset = true;
+    ImVec2  ViewOffset; // in image space
+    float   Zoom = 10.0f;
+    float   ZoomMin = 1.0f;
+    float   ZoomMax = 10000.0f;
+};
+
+static void ExampleImageViewer_DrawOptions(ExampleImageViewerData* data)
+{
+    ImGui::SetNextItemShortcut(ImGuiKey_G, ImGuiInputFlags_Tooltip); // | ImGuiInputFlags_RouteGlobal
+    ImGui::Checkbox("Grid", &data->GridEnabled);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetFontSize() * 10.0f);
+    float zoom_100 = data->Zoom * 100.0f;
+    if (ImGui::DragFloat("##Zoom", &zoom_100, 5.0f, data->ZoomMin * 100.0f, data->ZoomMax * 100.0f, "%.0f%%", ImGuiSliderFlags_AlwaysClamp))
+        data->Zoom = zoom_100 / 100.0f;
+}
+
+static void ExampleImageViewer_DrawCanvas(ExampleImageViewerData* data, ImVec2 canvas_size, ImTextureRef image_tex_ref, int image_w, int image_h)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    IM_ASSERT(canvas_size.x >= 0.0f && canvas_size.y >= 0.0f);
+
+    // Layout canvas
+    ImGui::InvisibleButton("##Canvas", canvas_size);
+    ImVec2 canvas_min = ImGui::GetItemRectMin();
+    ImVec2 canvas_max = ImGui::GetItemRectMax();
+
+    if (data->ViewReset)
+        data->ViewOffset = ImVec2((canvas_size.x * 0.5f / data->Zoom) - 0.5f, (canvas_size.y * 0.5f / data->Zoom) - 0.5f); // Add half a pixel padding
+    data->ViewReset = false;
+
+    // Handle inputs
+    if (ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY))
+        if (io.MouseWheel != 0.0f)
+            data->Zoom = IM_CLAMP(data->Zoom * (1.0f + io.MouseWheel * 0.10f), data->ZoomMin, data->ZoomMax);
+    float zoom = data->Zoom; // (float)(int)ViewZoom;
+    if (ImGui::IsItemActive() && ImGui::IsMouseDragging(0))
+    {
+        data->ViewOffset.x -= io.MouseDelta.x / zoom;
+        data->ViewOffset.y -= io.MouseDelta.y / zoom;
+    }
+
+    // Display image
+    ImVec2 image_min, image_max;
+    image_min.x = (float)(int)((canvas_min.x - (data->ViewOffset.x * zoom)) + (canvas_size.x * 0.5f));
+    image_min.y = (float)(int)((canvas_min.y - (data->ViewOffset.y * zoom)) + (canvas_size.y * 0.5f));
+    image_max.x = (float)(int)(image_min.x + image_w * zoom);
+    image_max.y = (float)(int)(image_min.y + image_h * zoom);
+    draw_list->AddRect(ImVec2(canvas_min.x - 1.0f, canvas_min.y - 1.0f), ImVec2(canvas_max.x + 1.0f, canvas_max.y + 1.0f), IM_COL32(255, 255, 255, 255));
+    draw_list->PushClipRect(canvas_min, canvas_max, true);
+    draw_list->AddRectFilled(image_min, image_max, data->ImageBgColor);
+    if (platform_io.DrawCallback_SetSamplerNearest != NULL)
+        draw_list->AddCallback(platform_io.DrawCallback_SetSamplerNearest);
+    draw_list->AddImage(image_tex_ref, image_min, image_max);
+    if (platform_io.DrawCallback_SetSamplerLinear != NULL)
+        draw_list->AddCallback(ImGui::GetPlatformIO().DrawCallback_SetSamplerLinear);
+
+    // Display grid lines for visible pixels
+    if (data->GridEnabled && zoom > 6.0f)
+    {
+        const float step = (float)zoom;
+        for (int px = (int)((canvas_min.x - image_min.x) / step); px <= (int)((canvas_max.x - image_min.x) / step); px++)
+            draw_list->AddLineV(image_min.x + px * step, canvas_min.y, canvas_max.y, data->GridColor, 1.0f);
+        for (int py = (int)((canvas_min.y - image_min.y) / step); py <= (int)((canvas_max.y - image_min.y) / step); py++)
+            draw_list->AddLineH(canvas_min.x, canvas_max.x, image_min.y + py * step, data->GridColor, 1.0f);
+    }
+    draw_list->PopClipRect();
 }
 
 //-----------------------------------------------------------------------------
@@ -1794,7 +1884,6 @@ static void DemoWindowWidgetsDragsAndSliders()
         ImGui::CheckboxFlags("ImGuiSliderFlags_WrapAround", &flags, ImGuiSliderFlags_WrapAround);
         ImGui::SameLine(); HelpMarker("Enable wrapping around from max to min and from min to max (only supported by DragXXX() functions)");
         ImGui::CheckboxFlags("ImGuiSliderFlags_ColorMarkers", &flags, ImGuiSliderFlags_ColorMarkers);
-        //ImGui::CheckboxFlags("ImGuiSliderFlags_ColorMarkersG", &flags, 1 << ImGuiSliderFlags_ColorMarkersIndexShift_); // Not explicitly documented but possible.
 
         // Drags
         static float drag_f = 0.5f;
@@ -1871,40 +1960,29 @@ static void DemoWindowWidgetsImages()
         // - Read https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples
 
         // Grab the current texture identifier used by the font atlas.
-        ImTextureRef my_tex_id = io.Fonts->TexRef;
+        ImFontAtlas* atlas = io.Fonts;
+        ImTextureRef my_tex_id = atlas->TexRef;
+        float my_tex_w = (float)atlas->TexData->Width; // Regular user code should never have to care about TexData-> fields, but since we want to display the entire texture here, we pull Width/Height from it.
+        float my_tex_h = (float)atlas->TexData->Height;
+        ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
 
-        // Regular user code should never have to care about TexData-> fields, but since we want to display the entire texture here, we pull Width/Height from it.
-        float my_tex_w = (float)io.Fonts->TexData->Width;
-        float my_tex_h = (float)io.Fonts->TexData->Height;
+        // Basic drawing
+        ImGui::SeparatorText("Image()/ImageWithBg() function");
+        ImVec2 uv_min = ImVec2(0.0f, 0.0f); // Top-left
+        ImVec2 uv_max = ImVec2(1.0f, 1.0f); // Lower-right
+        ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, IM_MAX(1.0f, ImGui::GetStyle().ImageBorderSize));
+        ImGui::ImageWithBg(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+        ImGui::PopStyleVar();
 
-        {
-            ImGui::Text("%.0fx%.0f", my_tex_w, my_tex_h);
-            ImVec2 pos = ImGui::GetCursorScreenPos();
-            ImVec2 uv_min = ImVec2(0.0f, 0.0f); // Top-left
-            ImVec2 uv_max = ImVec2(1.0f, 1.0f); // Lower-right
-            ImGui::PushStyleVar(ImGuiStyleVar_ImageBorderSize, IM_MAX(1.0f, ImGui::GetStyle().ImageBorderSize));
-            ImGui::ImageWithBg(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-            if (ImGui::BeginItemTooltip())
-            {
-                float region_sz = 32.0f;
-                float region_x = io.MousePos.x - pos.x - region_sz * 0.5f;
-                float region_y = io.MousePos.y - pos.y - region_sz * 0.5f;
-                float zoom = 4.0f;
-                if (region_x < 0.0f) { region_x = 0.0f; }
-                else if (region_x > my_tex_w - region_sz) { region_x = my_tex_w - region_sz; }
-                if (region_y < 0.0f) { region_y = 0.0f; }
-                else if (region_y > my_tex_h - region_sz) { region_y = my_tex_h - region_sz; }
-                ImGui::Text("Min: (%.2f, %.2f)", region_x, region_y);
-                ImGui::Text("Max: (%.2f, %.2f)", region_x + region_sz, region_y + region_sz);
-                ImVec2 uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h);
-                ImVec2 uv1 = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) / my_tex_h);
-                ImGui::ImageWithBg(my_tex_id, ImVec2(region_sz * zoom, region_sz * zoom), uv0, uv1, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-                ImGui::EndTooltip();
-            }
-            ImGui::PopStyleVar();
-        }
+        // Fancy widget
+        ImGui::SeparatorText("Interactive Image Viewer");
+        static ExampleImageViewerData image_viewer;
+        ImVec2 canvas_size(ImGui::GetContentRegionAvail().x, my_tex_h * 2.0f);
+        ExampleImageViewer_DrawOptions(&image_viewer);
+        ExampleImageViewer_DrawCanvas(&image_viewer, canvas_size, my_tex_id, (int)my_tex_w, (int)my_tex_h);
 
         IMGUI_DEMO_MARKER("Widgets/Images/Textured buttons");
+        ImGui::SeparatorText("Textured Buttons");
         ImGui::TextWrapped("And now some textured buttons..");
         static int pressed_count = 0;
         for (int i = 0; i < 8; i++)
@@ -2010,29 +2088,32 @@ static void DemoWindowWidgetsMultiComponents()
         static float vec4f[4] = { 0.10f, 0.20f, 0.30f, 0.44f };
         static int vec4i[4] = { 1, 5, 100, 255 };
 
+        static ImGuiSliderFlags flags = 0;
+        ImGui::CheckboxFlags("ImGuiSliderFlags_ColorMarkers", &flags, ImGuiSliderFlags_ColorMarkers); // Only passing this to Drag/Sliders
+
         ImGui::SeparatorText("2-wide");
         ImGui::InputFloat2("input float2", vec4f);
-        ImGui::DragFloat2("drag float2", vec4f, 0.01f, 0.0f, 1.0f);
-        ImGui::SliderFloat2("slider float2", vec4f, 0.0f, 1.0f);
         ImGui::InputInt2("input int2", vec4i);
-        ImGui::DragInt2("drag int2", vec4i, 1, 0, 255);
-        ImGui::SliderInt2("slider int2", vec4i, 0, 255);
+        ImGui::DragFloat2("drag float2", vec4f, 0.01f, 0.0f, 1.0f, NULL, flags);
+        ImGui::DragInt2("drag int2", vec4i, 1, 0, 255, NULL, flags);
+        ImGui::SliderFloat2("slider float2", vec4f, 0.0f, 1.0f, NULL, flags);
+        ImGui::SliderInt2("slider int2", vec4i, 0, 255, NULL, flags);
 
         ImGui::SeparatorText("3-wide");
         ImGui::InputFloat3("input float3", vec4f);
-        ImGui::DragFloat3("drag float3", vec4f, 0.01f, 0.0f, 1.0f);
-        ImGui::SliderFloat3("slider float3", vec4f, 0.0f, 1.0f);
         ImGui::InputInt3("input int3", vec4i);
-        ImGui::DragInt3("drag int3", vec4i, 1, 0, 255);
-        ImGui::SliderInt3("slider int3", vec4i, 0, 255);
+        ImGui::DragFloat3("drag float3", vec4f, 0.01f, 0.0f, 1.0f, NULL, flags);
+        ImGui::DragInt3("drag int3", vec4i, 1, 0, 255, NULL, flags);
+        ImGui::SliderFloat3("slider float3", vec4f, 0.0f, 1.0f, NULL, flags);
+        ImGui::SliderInt3("slider int3", vec4i, 0, 255, NULL, flags);
 
         ImGui::SeparatorText("4-wide");
         ImGui::InputFloat4("input float4", vec4f);
-        ImGui::DragFloat4("drag float4", vec4f, 0.01f, 0.0f, 1.0f);
-        ImGui::SliderFloat4("slider float4", vec4f, 0.0f, 1.0f);
         ImGui::InputInt4("input int4", vec4i);
-        ImGui::DragInt4("drag int4", vec4i, 1, 0, 255);
-        ImGui::SliderInt4("slider int4", vec4i, 0, 255);
+        ImGui::DragFloat4("drag float4", vec4f, 0.01f, 0.0f, 1.0f, NULL, flags);
+        ImGui::DragInt4("drag int4", vec4i, 1, 0, 255, NULL, flags);
+        ImGui::SliderFloat4("slider float4", vec4f, 0.0f, 1.0f, NULL, flags);
+        ImGui::SliderInt4("slider int4", vec4i, 0, 255, NULL, flags);
 
         ImGui::SeparatorText("Ranges");
         static float begin = 10, end = 90;
@@ -2713,7 +2794,7 @@ struct ExampleDualListBox
                 }
                 if (child_visible)
                 {
-                    ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_None;
+                    ImGuiMultiSelectFlags flags = ImGuiMultiSelectFlags_BoxSelect1d;
                     ImGuiMultiSelectIO* ms_io = ImGui::BeginMultiSelect(flags, selection.Size, items.Size);
                     ApplySelectionRequests(ms_io, side);
 
@@ -3322,10 +3403,14 @@ static void DemoWindowWidgetsSelectionAndMultiSelect(ImGuiDemoWindowData* demo_d
                     flags &= ~ImGuiMultiSelectFlags_ScopeRect;
                 if (ImGui::CheckboxFlags("ImGuiMultiSelectFlags_ScopeRect", &flags, ImGuiMultiSelectFlags_ScopeRect) && (flags & ImGuiMultiSelectFlags_ScopeRect))
                     flags &= ~ImGuiMultiSelectFlags_ScopeWindow;
-                if (ImGui::CheckboxFlags("ImGuiMultiSelectFlags_SelectOnClick", &flags, ImGuiMultiSelectFlags_SelectOnClick) && (flags & ImGuiMultiSelectFlags_SelectOnClick))
-                    flags &= ~ImGuiMultiSelectFlags_SelectOnClickRelease;
-                if (ImGui::CheckboxFlags("ImGuiMultiSelectFlags_SelectOnClickRelease", &flags, ImGuiMultiSelectFlags_SelectOnClickRelease) && (flags & ImGuiMultiSelectFlags_SelectOnClickRelease))
-                    flags &= ~ImGuiMultiSelectFlags_SelectOnClick;
+                if (ImGui::CheckboxFlags("ImGuiMultiSelectFlags_SelectOnAuto", &flags, ImGuiMultiSelectFlags_SelectOnAuto))
+                    flags &= ~(ImGuiMultiSelectFlags_SelectOnMask_ ^ ImGuiMultiSelectFlags_SelectOnAuto);
+                ImGui::SameLine(); HelpMarker("Apply selection on mouse down when clicking on unselected item, on mouse up when clicking on selected item. (Default)");
+                if (ImGui::CheckboxFlags("ImGuiMultiSelectFlags_SelectOnClickAlways", &flags, ImGuiMultiSelectFlags_SelectOnClickAlways))
+                    flags &= ~(ImGuiMultiSelectFlags_SelectOnMask_ ^ ImGuiMultiSelectFlags_SelectOnClickAlways);
+                ImGui::SameLine(); HelpMarker("Prevents Drag and Drop from being used on multi-selection, but allows e.g. BoxSelect to always reselect even when clicking inside an existing selection. (Excel style behavior)");
+                if (ImGui::CheckboxFlags("ImGuiMultiSelectFlags_SelectOnClickRelease", &flags, ImGuiMultiSelectFlags_SelectOnClickRelease))
+                    flags &= ~(ImGuiMultiSelectFlags_SelectOnMask_ ^ ImGuiMultiSelectFlags_SelectOnClickRelease);
                 ImGui::SameLine(); HelpMarker("Allow dragging an unselected item without altering selection.");
                 ImGui::TreePop();
             }
@@ -8252,6 +8337,7 @@ void ImGui::ShowAboutWindow(bool* p_open)
         if (copy_to_clipboard)
         {
             ImGui::LogToClipboard();
+            ImGui::LogText("// (Copy from the next line. Keep the ``` markers for formatting.)\n");
             ImGui::LogText("```cpp\n"); // Back quotes will make text appears without formatting when pasting on GitHub
         }
 
@@ -8613,6 +8699,7 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
             SameLine(); HelpMarker("Alignment applies when a button is larger than its text content.");
             SliderFloat2("SelectableTextAlign", (float*)&style.SelectableTextAlign, 0.0f, 1.0f, "%.2f");
             SameLine(); HelpMarker("Alignment applies when a selectable is larger than its text content.");
+            SliderFloat("SeparatorSize", &style.SeparatorSize, 0.0f, 10.0f, "%.0f");
             SliderFloat("SeparatorTextBorderSize", &style.SeparatorTextBorderSize, 0.0f, 10.0f, "%.0f");
             SliderFloat2("SeparatorTextAlign", (float*)&style.SeparatorTextAlign, 0.0f, 1.0f, "%.2f");
             SliderFloat2("SeparatorTextPadding", (float*)&style.SeparatorTextPadding, 0.0f, 40.0f, "%.0f");
@@ -8839,13 +8926,23 @@ void ImGui::ShowUserGuide()
     BulletText("Ctrl+Z to undo, Ctrl+Y/Ctrl+Shift+Z to redo.");
     BulletText("Escape to revert.");
     Unindent();
-    BulletText("With keyboard navigation enabled:");
+    BulletText("With Keyboard controls enabled:");
     Indent();
     BulletText("Arrow keys or Home/End/PageUp/PageDown to navigate.");
     BulletText("Space to activate a widget.");
     BulletText("Return to input text into a widget.");
     BulletText("Escape to deactivate a widget, close popup,\nexit a child window or the menu layer, clear focus.");
     BulletText("Alt to jump to the menu layer of a window.");
+    BulletText("Menu or Shift+F10 to open a context menu.");
+    Unindent();
+    BulletText("With Gamepad controls enabled:");
+    Indent();
+    BulletText("D-Pad: Navigate / Tweak / Resize (in Windowing mode).");
+    BulletText("%s Face button: Activate / Open / Toggle. Hold: activate with text input.", io.ConfigNavSwapGamepadButtons ? "East" : "South");
+    BulletText("%s Face button: Cancel / Close / Exit.", io.ConfigNavSwapGamepadButtons ? "South" : "East");
+    BulletText("West Face button: Toggle Menu. Hold for Windowing mode (Focus/Move/Resize windows).");
+    BulletText("North Face button: Open Context Menu.");
+    BulletText("L1/R1: Tweak Slower/Faster, Focus Previous/Next (in Windowing Mode).");
     Unindent();
 }
 
@@ -8920,7 +9017,7 @@ static void ShowExampleMenuFile()
         IMGUI_DEMO_MARKER("Examples/Menu/Options");
         static bool enabled = true;
         ImGui::MenuItem("Enabled", "", &enabled);
-        ImGui::BeginChild("child", ImVec2(0, 60), ImGuiChildFlags_Borders);
+        ImGui::BeginChild("child", ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 5.0f), ImGuiChildFlags_Borders);
         for (int i = 0; i < 10; i++)
             ImGui::Text("Scrolling Text %d", i);
         ImGui::EndChild();
@@ -9086,7 +9183,8 @@ struct ExampleAppConsole
         ImGui::Separator();
 
         // Reserve enough left-over height for 1 separator + 1 input text
-        const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        ImGuiStyle& style = ImGui::GetStyle();
+        const float footer_height_to_reserve = style.SeparatorSize + style.ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
         if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar))
         {
             if (ImGui::BeginPopupContextWindow())
@@ -9329,6 +9427,28 @@ static void ShowExampleAppConsole(bool* p_open)
 {
     static ExampleAppConsole console;
     console.Draw("Example: Console", p_open);
+}
+
+//-----------------------------------------------------------------------------
+// [SECTION] Example App: Image Viewer / ShowExampleAppImageViewer()
+//-----------------------------------------------------------------------------
+
+static void ShowExampleAppImageViewer(bool* p_open)
+{
+    ImFontAtlas* atlas = ImGui::GetIO().Fonts;
+    ImTextureRef tex_ref = atlas->TexRef; // We don't have access to other textures in this demo!
+    int tex_w = atlas->TexData->Width;
+    int tex_h = atlas->TexData->Height;
+    if (ImGui::Begin("Example: Image Viewer", p_open))
+    {
+        static ExampleImageViewerData image_viewer;
+        ExampleImageViewer_DrawOptions(&image_viewer);
+        ImVec2 canvas_size = ImGui::GetContentRegionAvail();
+        ImVec2 canvas_min_size = ImGui::IsWindowAppearing() ? ImVec2(3.0f * tex_w, 4.0f * tex_h) : ImVec2(1.0f, 1.0f);
+        canvas_size = ImVec2(IM_MAX(canvas_size.x, canvas_min_size.x), IM_MAX(canvas_size.y, canvas_min_size.y));
+        ExampleImageViewer_DrawCanvas(&image_viewer, canvas_size, tex_ref, tex_w, tex_h);
+    }
+    ImGui::End();
 }
 
 //-----------------------------------------------------------------------------
@@ -10115,7 +10235,7 @@ static void ShowExampleAppWindowTitles(bool*)
 
     ImGui::SetNextWindowPos(ImVec2(base_pos.x + 100, base_pos.y + 200), ImGuiCond_FirstUseEver);
     ImGui::Begin("Same title as another window##2");
-    IMGUI_DEMO_MARKER("Examples/Manipulating window titles##2");;
+    IMGUI_DEMO_MARKER("Examples/Manipulating window titles##2");
     ImGui::Text("This is window 2.\nMy title is the same as window 1, but my identifier is unique.");
     ImGui::End();
 
@@ -10226,20 +10346,20 @@ static void ShowExampleAppCustomRendering(bool* p_open)
                 draw_list->AddNgon(ImVec2(x + sz*0.5f, y + sz*0.5f), sz*0.5f, col, ngon_sides, th);                 x += sz + spacing;  // N-gon
                 draw_list->AddCircle(ImVec2(x + sz*0.5f, y + sz*0.5f), sz*0.5f, col, circle_segments, th);          x += sz + spacing;  // Circle
                 draw_list->AddEllipse(ImVec2(x + sz*0.5f, y + sz*0.5f), ImVec2(sz*0.5f, sz*0.3f), col, -0.3f, circle_segments, th); x += sz + spacing;  // Ellipse
-                draw_list->AddRect(ImVec2(x, y), ImVec2(x + sz, y + sz), col, 0.0f, ImDrawFlags_None, th);          x += sz + spacing;  // Square
-                draw_list->AddRect(ImVec2(x, y), ImVec2(x + sz, y + sz), col, rounding, ImDrawFlags_None, th);      x += sz + spacing;  // Square with all rounded corners
-                draw_list->AddRect(ImVec2(x, y), ImVec2(x + sz, y + sz), col, rounding, corners_tl_br, th);         x += sz + spacing;  // Square with two rounded corners
+                draw_list->AddRect(ImVec2(x, y), ImVec2(x + sz, y + sz), col, 0.0f, th);                            x += sz + spacing;  // Square
+                draw_list->AddRect(ImVec2(x, y), ImVec2(x + sz, y + sz), col, rounding, th);                        x += sz + spacing;  // Square with all rounded corners
+                draw_list->AddRect(ImVec2(x, y), ImVec2(x + sz, y + sz), col, rounding, th, corners_tl_br);         x += sz + spacing;  // Square with two rounded corners
                 draw_list->AddTriangle(ImVec2(x+sz*0.5f,y), ImVec2(x+sz, y+sz-0.5f), ImVec2(x, y+sz-0.5f), col, th);x += sz + spacing;  // Triangle
                 //draw_list->AddTriangle(ImVec2(x+sz*0.2f,y), ImVec2(x, y+sz-0.5f), ImVec2(x+sz*0.4f, y+sz-0.5f), col, th);x+= sz*0.4f + spacing; // Thin triangle
-                PathConcaveShape(draw_list, x, y, sz); draw_list->PathStroke(col, ImDrawFlags_Closed, th);          x += sz + spacing;  // Concave Shape
+                PathConcaveShape(draw_list, x, y, sz); draw_list->PathStroke(col, th, ImDrawFlags_Closed);          x += sz + spacing;  // Concave Shape
                 //draw_list->AddPolyline(concave_shape, IM_COUNTOF(concave_shape), col, ImDrawFlags_Closed, th);
-                draw_list->AddLine(ImVec2(x, y), ImVec2(x + sz, y), col, th);                                       x += sz + spacing;  // Horizontal line (note: drawing a filled rectangle will be faster!)
-                draw_list->AddLine(ImVec2(x, y), ImVec2(x, y + sz), col, th);                                       x += spacing;       // Vertical line (note: drawing a filled rectangle will be faster!)
+                draw_list->AddLineH(x, x + sz, y, col, th);                                                         x += sz + spacing;  // Horizontal line (note: drawing a filled rectangle will be faster!)
+                draw_list->AddLineV(x, y, y + sz, col, th);                                                         x += spacing;       // Vertical line (note: drawing a filled rectangle will be faster!)
                 draw_list->AddLine(ImVec2(x, y), ImVec2(x + sz, y + sz), col, th);                                  x += sz + spacing;  // Diagonal line
 
                 // Path
                 draw_list->PathArcTo(ImVec2(x + sz*0.5f, y + sz*0.5f), sz*0.5f, 3.141592f, 3.141592f * -0.5f);
-                draw_list->PathStroke(col, ImDrawFlags_None, th);
+                draw_list->PathStroke(col, th);
                 x += sz + spacing;
 
                 // Quadratic Bezier Curve (3 control points)
@@ -10373,9 +10493,9 @@ static void ShowExampleAppCustomRendering(bool* p_open)
             {
                 const float GRID_STEP = 64.0f;
                 for (float x = fmodf(scrolling.x, GRID_STEP); x < canvas_sz.x; x += GRID_STEP)
-                    draw_list->AddLine(ImVec2(canvas_p0.x + x, canvas_p0.y), ImVec2(canvas_p0.x + x, canvas_p1.y), IM_COL32(200, 200, 200, 40));
+                    draw_list->AddLineV(canvas_p0.x + x, canvas_p0.y, canvas_p1.y, IM_COL32(200, 200, 200, 40));
                 for (float y = fmodf(scrolling.y, GRID_STEP); y < canvas_sz.y; y += GRID_STEP)
-                    draw_list->AddLine(ImVec2(canvas_p0.x, canvas_p0.y + y), ImVec2(canvas_p1.x, canvas_p0.y + y), IM_COL32(200, 200, 200, 40));
+                    draw_list->AddLineH(canvas_p0.x, canvas_p1.x, canvas_p0.y + y, IM_COL32(200, 200, 200, 40));
             }
             for (int n = 0; n < points.Size; n += 2)
                 draw_list->AddLine(ImVec2(origin.x + points[n].x, origin.y + points[n].y), ImVec2(origin.x + points[n + 1].x, origin.y + points[n + 1].y), IM_COL32(255, 255, 0, 255), 2.0f);
@@ -11042,12 +11162,14 @@ struct ExampleAssetsBrowser
     // Options
     bool            ShowTypeOverlay = true;
     bool            AllowSorting = true;
-    bool            AllowDragUnselected = false;
-    bool            AllowBoxSelect = true;
-    float           IconSize = 32.0f;
+    bool            AllowBoxSelect = true;                  // Will set ImGuiMultiSelectFlags_BoxSelect2d
+    bool            AllowBoxSelectInsideSelection = false;  // Will set ImGuiMultiSelectFlags_SelectOnClickAlways
+    bool            AllowDragUnselected = false;            // Will set ImGuiMultiSelectFlags_SelectOnClickRelease
+    float           IconSize = 0;
     int             IconSpacing = 10;
-    int             IconHitSpacing = 4;         // Increase hit-spacing if you want to make it possible to clear or box-select from gaps. Some spacing is required to able to amend with Shift+box-select. Value is small in Explorer.
+    int             IconHitSpacing = 4;                     // Increase hit-spacing if you want to make it possible to clear or box-select from gaps. Some spacing is required to able to amend with Shift+box-select. Value is small in Explorer.
     bool            StretchSpacing = true;
+    bool            UseScrollX = false;                     // Debug: submit twice the number of items per line (overflow horizontally to exercise ScrollX + box-select)
 
     // State
     ImVector<ExampleAsset> Items;               // Our items
@@ -11098,11 +11220,14 @@ struct ExampleAssetsBrowser
         // Layout: calculate number of icon per line and number of lines
         LayoutItemSize = ImVec2(floorf(IconSize), floorf(IconSize));
         LayoutColumnCount = IM_MAX((int)(avail_width / (LayoutItemSize.x + LayoutItemSpacing)), 1);
-        LayoutLineCount = (Items.Size + LayoutColumnCount - 1) / LayoutColumnCount;
 
         // Layout: when stretching: allocate remaining space to more spacing. Round before division, so item_spacing may be non-integer.
         if (StretchSpacing && LayoutColumnCount > 1)
             LayoutItemSpacing = floorf(avail_width - LayoutItemSize.x * LayoutColumnCount) / LayoutColumnCount;
+
+        if (UseScrollX)
+            LayoutColumnCount *= 2;
+        LayoutLineCount = (Items.Size + LayoutColumnCount - 1) / LayoutColumnCount;
 
         LayoutItemStep = ImVec2(LayoutItemSize.x + LayoutItemSpacing, LayoutItemSize.y + LayoutItemSpacing);
         LayoutSelectableSpacing = IM_MAX(floorf(LayoutItemSpacing) - IconHitSpacing, 0.0f);
@@ -11111,6 +11236,9 @@ struct ExampleAssetsBrowser
 
     void Draw(const char* title, bool* p_open)
     {
+        if (IconSize <= 0.0f)
+            IconSize = ImGui::CalcTextSize("99999").x;
+
         ImGui::SetNextWindowSize(ImVec2(IconSize * 25, IconSize * 15), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin(title, p_open, ImGuiWindowFlags_MenuBar))
         {
@@ -11148,8 +11276,11 @@ struct ExampleAssetsBrowser
                 ImGui::Checkbox("Allow Sorting", &AllowSorting);
 
                 ImGui::SeparatorText("Selection Behavior");
-                ImGui::Checkbox("Allow dragging unselected item", &AllowDragUnselected);
                 ImGui::Checkbox("Allow box-selection", &AllowBoxSelect);
+                if (ImGui::Checkbox("Allow box-selection from selected items", &AllowBoxSelectInsideSelection) && AllowBoxSelectInsideSelection)
+                    AllowDragUnselected = false;
+                if (ImGui::Checkbox("Allow dragging unselected item", &AllowDragUnselected) && AllowDragUnselected)
+                    AllowBoxSelectInsideSelection = false;
 
                 ImGui::SeparatorText("Layout");
                 ImGui::SliderFloat("Icon Size", &IconSize, 16.0f, 128.0f, "%.0f");
@@ -11157,6 +11288,7 @@ struct ExampleAssetsBrowser
                 ImGui::SliderInt("Icon Spacing", &IconSpacing, 0, 32);
                 ImGui::SliderInt("Icon Hit Spacing", &IconHitSpacing, 0, 32);
                 ImGui::Checkbox("Stretch Spacing", &StretchSpacing);
+                ImGui::Checkbox("Use ScrollX", &UseScrollX);
                 ImGui::PopItemWidth();
                 ImGui::EndMenu();
             }
@@ -11186,7 +11318,7 @@ struct ExampleAssetsBrowser
 
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowContentSize(ImVec2(0.0f, LayoutOuterPadding + LayoutLineCount * (LayoutItemSize.y + LayoutItemSpacing)));
-        if (ImGui::BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove))
+        if (ImGui::BeginChild("Assets", ImVec2(0.0f, -ImGui::GetTextLineHeightWithSpacing()), ImGuiChildFlags_Borders, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_HorizontalScrollbar))
         {
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -11205,9 +11337,11 @@ struct ExampleAssetsBrowser
             if (AllowBoxSelect)
                 ms_flags |= ImGuiMultiSelectFlags_BoxSelect2d;
 
-            // - This feature allows dragging an unselected item without selecting it (rarely used)
+            // - Selection mode
             if (AllowDragUnselected)
-                ms_flags |= ImGuiMultiSelectFlags_SelectOnClickRelease;
+                ms_flags |= ImGuiMultiSelectFlags_SelectOnClickRelease; // Rarely used: Allows dragging an unselected item without selecting it(rarely used)
+            else if (AllowBoxSelectInsideSelection)
+                ms_flags |= ImGuiMultiSelectFlags_SelectOnClickAlways; // Rarely used: Prevents Drag and Drop from being used on multiple-selection, but allows e.g. BoxSelect to always reselect even when clicking inside an existing selection.
 
             // - Enable keyboard wrapping on X axis
             // (FIXME-MULTISELECT: We haven't designed/exposed a general nav wrapping api yet, so this flag is provided as a courtesy to avoid doing:
@@ -11328,6 +11462,8 @@ struct ExampleAssetsBrowser
                 }
             }
             clipper.End();
+            if (Items.Size == 0)
+                ImGui::Dummy(ImVec2(0, 0));
             ImGui::PopStyleVar(); // ImGuiStyleVar_ItemSpacing
 
             // Context menu
