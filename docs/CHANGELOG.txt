@@ -36,6 +36,47 @@ HOW TO UPDATE?
 - Please report any issue!
 
 -----------------------------------------------------------------------
+ VERSION 1.93.0 WIP (In Progress)
+-----------------------------------------------------------------------
+
+Breaking Changes:
+
+- Style: obsoleted `style.CurveTessellationTol (default 1.25)` which was in Pixels² unit in
+  favor of `style.CurveTesselationMaxError` (default 1.12)` which is in Pixels unit. It is
+  easier to tweak + this allows us to easily scale error threshold on high density screens.
+  - style.CurveTesselationMaxError == sqrf(style.CurveTessellationTol).
+- Backends:
+  - DirectX12: Removed support for legacy `ImGui_ImplDX12_Init()` signature, which was
+    obsoleted in 1.91.6 (December 2014), because it needed to forcefully disable support
+    for `ImGuiBackendFlags_RendererHasTextures`. Use the new signature! (#9487)
+
+Other Changes:
+
+- Fonts:
+  - Reworked `AddFontDefault()` to use `io.DisplayFrameBufferScale` as part of the heuristic
+    to select `AddFontDefaultVector()` by default, effectively using ProggyForever instead of
+    ProggyClean on most Apple/Retina setups by default.
+- ImDrawList:
+  - Per-viewport FramebufferScale for Apple/Retina screen is applied to draw lists:
+    - AA Fringe is scaled accordingly.
+    - Circle and Curves tessellation error are scaled accordingly.
+- Backends:
+  - QNX: added QNX Screen backend. (#9492) [@mgorchak-blackberry]
+  - SDL2: fixed querying framebuffer scale/density when using Metal without
+    going through a SDL_Renderer. (#5592) [@lailoken]
+- Examples:
+  - SDL2+Metal: create Metal context without using a SDL_Renderer.
+  - QNX+OpenGL3, QNX+Vulkan: added QNX Screen examples. (#9492) [@mgorchak-blackberry]
+
+Docking+Viewports Branch:
+
+- Backends:
+  - Metal: fixed resizing windows losing framebuffer scale. (#6828, #8856) [@laikoken]
+- Examples:
+  - SDL3+Metal, GLFW+Metal: fix multi-viewport support.
+
+
+-----------------------------------------------------------------------
  VERSION 1.92.9b (Released 2026-07-31)
 -----------------------------------------------------------------------
 
