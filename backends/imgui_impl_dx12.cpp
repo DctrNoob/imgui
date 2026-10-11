@@ -5,7 +5,7 @@
 //  [X] Renderer: User texture binding. Use 'D3D12_GPU_DESCRIPTOR_HANDLE' as texture identifier. Read the FAQ about ImTextureID/ImTextureRef!
 //  [X] Renderer: Large meshes support (64k+ vertices) even with 16-bit indices (ImGuiBackendFlags_RendererHasVtxOffset).
 //  [X] Renderer: Texture updates support for dynamic font atlas (ImGuiBackendFlags_RendererHasTextures).
-//  [X] Renderer: Expose selected render state for draw callbacks to use. Access in '(ImGui_ImplXXXX_RenderState*)GetPlatformIO().Renderer_RenderState'.
+//  [X] Renderer: Expose selected render state for draw callbacks to use. Access with ImGui_ImplDX12_GetRenderState().
 //  [X] Renderer: Multi-viewport support (multiple windows). Enable with 'io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable'.
 //      FIXME: The transition from removing a viewport and moving the window in an existing hosted viewport tends to flicker.
 
@@ -23,6 +23,7 @@
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
 //  2026-XX-XX: Platform: Added support for multiple windows via the ImGuiPlatformIO interface.
+//  2026-09-07: Round framebuffer dimensions to the nearest integer instead of truncating them. (#9538, 9515, #8628)
 //  2026-08-05: DirectX12: *BREAKING CHANGE* Removed support for legacy `ImGui_ImplDX12_Init()` signature obsoleted in 1.91.6 (2024-11-15) because it needed to forcefully disable support for ImGuiBackendFlags_RendererHasTextures. (#9487)
 //  2026-04-23: Added support for standard draw callbacks (in platform_io): DrawCallback_ResetRenderState, DrawCallback_SetSamplerLinear, DrawCallback_SetSamplerNearest. (#9378)
 //  2025-10-23: [Docking] DirectX12: Fixed an issue in synchronization logic improving rendering throughput for secondary viewports. (#8961, #9025)
@@ -131,6 +132,11 @@ struct ImGui_ImplDX12_Data
 static ImGui_ImplDX12_Data* ImGui_ImplDX12_GetBackendData()
 {
     return ImGui::GetCurrentContext() ? (ImGui_ImplDX12_Data*)ImGui::GetIO().BackendRendererUserData : nullptr;
+}
+
+ImGui_ImplDX12_RenderState* ImGui_ImplDX12_GetRenderState()
+{
+    return (ImGui_ImplDX12_RenderState*)ImGui::GetPlatformIO().Renderer_RenderState;
 }
 
 // Buffers used during the rendering of a frame
@@ -258,8 +264,8 @@ static void ImGui_ImplDX12_SetupRenderState(ImDrawData* draw_data, ID3D12Graphic
 
     // Setup viewport
     D3D12_VIEWPORT vp = {};
-    vp.Width = draw_data->DisplaySize.x * draw_data->FramebufferScale.x;
-    vp.Height = draw_data->DisplaySize.y * draw_data->FramebufferScale.y;
+    vp.Width = (float)(int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x + 0.5f);
+    vp.Height = (float)(int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y + 0.5f);
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = vp.TopLeftY = 0.0f;
@@ -1255,6 +1261,8 @@ static void ImGui_ImplDX12_RenderWindow(ImGuiViewport* viewport, void*)
 {
     ImGui_ImplDX12_Data* bd = ImGui_ImplDX12_GetBackendData();
     ImGui_ImplDX12_ViewportData* vd = (ImGui_ImplDX12_ViewportData*)viewport->RendererUserData;
+    if (vd->SwapChain == nullptr)
+        return;
 
     ImGui_ImplDX12_FrameContext* frame_context = ImGui_WaitForNextFrameContext(vd);
     UINT back_buffer_idx = vd->SwapChain->GetCurrentBackBufferIndex();
